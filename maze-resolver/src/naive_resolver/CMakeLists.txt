@@ -18,18 +18,13 @@ add_executable(talker src/publisher_lambda_function.cpp)
 ament_target_dependencies(talker rclcpp std_msgs)
 ament_target_dependencies(listener rclcpp std_msgs)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-    "srv/MoveCmd.srv"
-    "srv/GetMap.srv"
-)
-
 install(TARGETS
   talker
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS
-listener
-DESTINATION lib/${PROJECT_NAME})
+  listener
+  DESTINATION lib/${PROJECT_NAME})
 
 
 ament_package()
