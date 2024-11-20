@@ -12,18 +12,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(cg_interfaces REQUIRED)
 
-add_executable(listener src/subscriber_member_function.cpp)
-add_executable(talker src/publisher_lambda_function.cpp)
-ament_target_dependencies(talker rclcpp std_msgs)
-ament_target_dependencies(listener rclcpp std_msgs)
 
-install(TARGETS
-  talker
-  DESTINATION lib/${PROJECT_NAME})
+add_executable(main src/mapping.cpp)
+ament_target_dependencies(main rclcpp cg_interfaces)
+
 
 install(TARGETS
-  listener
+  main
   DESTINATION lib/${PROJECT_NAME})
 
 
