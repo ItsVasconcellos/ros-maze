@@ -193,7 +193,6 @@ public:
                     this->start_position = {i, j};
                     this->map[i][j] = 3;
                 }
-                RCLCPP_INFO(rclcpp::get_logger("MazeClient"), "Map square: %d", this->map[i][j]);
             }
         }
         RCLCPP_INFO(rclcpp::get_logger("MazeClient"), "Map processed!");
@@ -239,9 +238,11 @@ public:
             RCLCPP_WARN(this->get_logger(), "No path to follow.");
             return;
         }
+        RCLCPP_WARN(this->get_logger(), "No path to follow. %zu", path.size());
 
-        for (size_t i = 0; i < path.size(); i++)
+        for (size_t i = 1; i < path.size(); i++)
         {
+            move_command_sent_ = false;
             int dx = path[i].first - path[i - 1].first;
             int dy = path[i].second - path[i - 1].second;
 
@@ -287,5 +288,6 @@ int main(int argc, char **argv)
     client->printPath();
     client->followPath();
     rclcpp::spin(client);
+    client.reset(); // Destroy the node
     rclcpp::shutdown();
 }
