@@ -101,7 +101,7 @@ public:
     std::vector<int> target_position;
     std::vector<std::pair<int, int>> path;
     bool map_processed_ = false;
-    // bool move_command_sent_ = true;
+    bool move_command_sent_ = false;
 
     MazeClient() : Node("maze_client")
     {
@@ -124,16 +124,15 @@ public:
     {
         auto request = std::make_shared<cg_interfaces::srv::MoveCmd::Request>();
         request->direction = direction;
-        RCLCPP_INFO(this->get_logger(), "Direction %s", request->direction.c_str());
         auto result = client_move_cmd_->async_send_request(request,
-                                                           [](rclcpp::Client<cg_interfaces::srv::MoveCmd>::SharedFuture future)
+                                                           [this](rclcpp::Client<cg_interfaces::srv::MoveCmd>::SharedFuture future)
                                                            {
                                                                try
                                                                {
                                                                    auto response = future.get();
                                                                    if (response->success)
                                                                    {
-                                                                       //    move_command_sent_ = true;
+                                                                       move_command_sent_ = true;
                                                                        RCLCPP_INFO(rclcpp::get_logger("MazeClient"), "Movimento realizado com sucesso!");
                                                                    }
                                                                    else
@@ -217,6 +216,22 @@ public:
         }
     }
 
+    void printPath()
+    {
+        if (path.empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "No path to print.");
+            return;
+        }
+
+        std::stringstream ss;
+        for (const auto &step : path)
+        {
+            ss << "(" << step.first << ", " << step.second << ") ";
+        }
+        RCLCPP_INFO(this->get_logger(), "Path: %s", ss.str().c_str());
+    }
+
     void followPath()
     {
         if (path.empty())
@@ -240,7 +255,12 @@ public:
             else if (dy == -1)
                 direction = "left";
 
+            RCLCPP_INFO(this->get_logger(), "Direction %s", direction.c_str());
             sendMoveCommand(direction);
+            while (!move_command_sent_)
+            {
+                rclcpp::spin_some(this->get_node_base_interface()); // Process callbacks
+            }
         }
     }
 
@@ -264,6 +284,7 @@ int main(int argc, char **argv)
     }
 
     client->makePath();
+    client->printPath();
     client->followPath();
     rclcpp::spin(client);
     rclcpp::shutdown();
