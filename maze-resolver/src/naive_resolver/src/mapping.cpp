@@ -89,7 +89,7 @@ std::vector<std::pair<int, int>> a_star(const std::vector<std::vector<uint16_t>>
         }
     }
 
-    return {}; // Caminho não encontrado
+    return {};
 }
 
 class MazeClient : public rclcpp::Node
@@ -215,22 +215,6 @@ public:
         }
     }
 
-    void printPath()
-    {
-        if (path.empty())
-        {
-            RCLCPP_WARN(this->get_logger(), "No path to print.");
-            return;
-        }
-
-        std::stringstream ss;
-        for (const auto &step : path)
-        {
-            ss << "(" << step.first << ", " << step.second << ") ";
-        }
-        RCLCPP_INFO(this->get_logger(), "Path: %s", ss.str().c_str());
-    }
-
     void followPath()
     {
         if (path.empty())
@@ -238,7 +222,6 @@ public:
             RCLCPP_WARN(this->get_logger(), "No path to follow.");
             return;
         }
-        RCLCPP_WARN(this->get_logger(), "No path to follow. %zu", path.size());
 
         for (size_t i = 1; i < path.size(); i++)
         {
@@ -281,13 +264,12 @@ int main(int argc, char **argv)
 
     while (!client->map_processed_)
     {
-        rclcpp::spin_some(client); // Process incoming callbacks and check the map_processed_ flag
+        rclcpp::spin_some(client);
     }
 
     client->makePath();
-    client->printPath();
     client->followPath();
     rclcpp::spin(client);
-    client.reset(); // Destroy the node
+    client.reset();
     rclcpp::shutdown();
 }
