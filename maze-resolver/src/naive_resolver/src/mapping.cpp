@@ -216,37 +216,40 @@ public:
     }
 
     void followPath()
+{
+    if (path.empty())
     {
-        if (path.empty())
-        {
-            RCLCPP_WARN(this->get_logger(), "No path to follow.");
-            return;
-        }
-
-        for (size_t i = 1; i < path.size(); i++)
-        {
-            move_command_sent_ = false;
-            int dx = path[i].first - path[i - 1].first;
-            int dy = path[i].second - path[i - 1].second;
-
-            std::string direction;
-            if (dx == 1)
-                direction = "down";
-            else if (dx == -1)
-                direction = "up";
-            else if (dy == 1)
-                direction = "right";
-            else if (dy == -1)
-                direction = "left";
-
-            RCLCPP_INFO(this->get_logger(), "Direction %s", direction.c_str());
-            sendMoveCommand(direction);
-            while (!move_command_sent_)
-            {
-                rclcpp::spin_some(this->get_node_base_interface()); // Process callbacks
-            }
-        }
+        RCLCPP_WARN(this->get_logger(), "No path to follow.");
+        return;
     }
+
+    for (size_t i = 1; i < path.size(); i++)
+    {
+        move_command_sent_ = false;
+        int dx = path[i].first - path[i - 1].first;
+        int dy = path[i].second - path[i - 1].second;
+
+        std::string direction;
+        if (dx == 1)
+            direction = "down";
+        else if (dx == -1)
+            direction = "up";
+        else if (dy == 1)
+            direction = "right";
+        else if (dy == -1)
+            direction = "left";
+
+        RCLCPP_INFO(this->get_logger(), "Direction %s", direction.c_str());
+        sendMoveCommand(direction);
+        
+        while (!move_command_sent_)
+        {
+            rclcpp::spin_some(this->get_node_base_interface()); 
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
 
 private:
     rclcpp::Client<cg_interfaces::srv::MoveCmd>::SharedPtr client_move_cmd_;
